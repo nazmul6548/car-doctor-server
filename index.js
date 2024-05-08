@@ -13,7 +13,12 @@ const cookieParser = require('cookie-parser');
 
 
 app.use(cors({
-  origin:['http://localhost:5173'],
+  origin:
+  [
+    'http://localhost:5174',
+    'https://car-doctor-client-c4632.web.app',
+    'https://car-doctor-client-c4632.firebaseapp.com'
+  ],
   credentials:true,
 }));
 app.use(express.json());
@@ -32,7 +37,11 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
-
+const cookiOption = {
+  httpOnly:true,
+  sameSite:process.env.NODE_ENV === 'production' ? "node" : "strict",
+  secure:process.env.NODE_ENV === 'production' ? true : false,
+}
 async function run() {
   try {
     const serviceCollection = client.db('carDoctor').collection('servicesCar');
@@ -47,11 +56,7 @@ app.post('/jwt',async(req,res) =>{
 
   const token = jwt.sign(user,process.env.ACCESS_TOKEN,{expiresIn:'1h'});
   res 
-  .cookie('token',token,{
-    httpOnly:true,
-    secure:fetch,
-    sameSite:'none'
-  })
+  .cookie('token',token,cookiOption)
   .send({success:true});
 }
 )
